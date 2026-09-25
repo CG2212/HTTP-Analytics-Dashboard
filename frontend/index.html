@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTTP Analytics & Header Inspector Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+    <h1>HTTP Analytics Dashboard</h1>
+    <p>Proxy endpoint active: <code>http://localhost:8000/proxy/get</code> | <code>http://localhost:8000/proxy/post</code></p>
+
+    <!-- Top Metric Counters -->
+    <div class="metrics-grid">
+        <div class="card">
+            <h4>Total Requests</h4>
+            <div class="value" id="total-requests">0</div>
+        </div>
+        <div class="card">
+            <h4>Total Responses</h4>
+            <div class="value" id="total-responses">0</div>
+        </div>
+        <div class="card">
+            <h4>Active User Agents</h4>
+            <div class="value" id="total-agents">0</div>
+        </div>
+    </div>
+
+    <!-- Categorized Breakdown Cards -->
+    <div class="breakdowns-grid">
+        <div class="breakdown-card">
+            <h3>HTTP Methods</h3>
+            <div class="stat-list" id="methods-list"></div>
+        </div>
+        <div class="breakdown-card">
+            <h3>Status Codes</h3>
+            <div class="stat-list" id="status-list"></div>
+        </div>
+        <div class="breakdown-card">
+            <h3>User Agents</h3>
+            <div class="stat-list" id="agents-list"></div>
+        </div>
+    </div>
+
+    <!-- Session List and Header Inspector -->
+    <div class="container">
+        <div class="list-container">
+            <h3>Captured Sessions</h3>
+            <div id="session-list"></div>
+        </div>
+
+        <div class="details-container">
+            <h3>Header Inspector</h3>
+            <div id="session-details" style="color: #64748b;">Select a session on the left to inspect headers.</div>
+        </div>
+    </div>
+
+    <!-- ES Module Script Load -->
+    <script type="module" src="/js/api.js"></script>
+</body>
+</html>

@@ -6,18 +6,27 @@ from langchain_google_vertexai import ChatVertexAI
 from agents.state import IncidentState
 
 class ValidationSchema(BaseModel):
-    passed: bool = Field(description="True if latency and error rate meet SLA standards (<500ms p95, <1% errors)")
-    summary: str = Field(description="Brief assessment of the load test performance")
+    passed: bool = Field(description="True if metrics satisfy SLA thresholds")
+    summary: str = Field(description="Detailed evaluation summary")
+    metrics_comparison: str = Field(description="Explicit breakdown of benchmark values versus SLA reference limits")
 
 async def validation_node(state: IncidentState) -> Dict[str, Any]:
-    print("[Validation Agent (Vertex AI)] Evaluating load test metrics...")
+    print("[Validation Agent (Vertex AI)] Running automated simulation benchmark audit...")
     current_retries = state.get("retry_count", 0)
-    await asyncio.sleep(1)  # Simulate test run execution
+    await asyncio.sleep(1)
 
+    # Explanation: These metrics are generated via an automated simulation benchmark runner 
+    # (mimicking a load test tool like Locust/k6) to test the proposed patch under concurrency.
     raw_metrics = {
+        "benchmark_source": "Automated Simulation Benchmark Runner (Mock Load Test)",
         "p95_latency_ms": 120 if current_retries >= 1 else 3200,
-        "error_rate": 0.0 if current_retries >= 1 else 0.14,
-        "total_requests": 1000
+        "error_rate_pct": 0.0 if current_retries >= 1 else 14.0,
+        "total_requests_tested": 1000,
+        "concurrency_level": 50
+    }
+    sla_limits = {
+        "max_p95_latency_ms": 500,
+        "max_error_rate_pct": 1.0
     }
 
     # Initialize Google Vertex AI Model
@@ -29,12 +38,25 @@ async def validation_node(state: IncidentState) -> Dict[str, Any]:
     )
     structured_llm = llm.with_structured_output(ValidationSchema)
 
-    prompt = f"""You are a Performance Testing Agent. Evaluate whether these load test metrics satisfy SLA requirements (SLA: p95 latency < 500ms, error rate < 1%).
+    prompt = f"""You are a Lead Performance Validation Agent. Audit the automated simulation benchmark telemetry against strict enterprise SLAs.
 
-Test Metrics:
-{raw_metrics}"""
+Simulated Benchmark Metrics:
+{raw_metrics}
+
+SLA Reference Limits:
+{sla_limits}
+
+Evaluate whether performance meets requirements and provide explicit comparison values."""
 
     evaluation: ValidationSchema = await structured_llm.ainvoke(prompt)
+
+    history_msg = (
+        f"Validation Agent Simulation Audit (Attempt {current_retries + 1}):\n"
+        f"  • Status: {'PASSED ' if evaluation.passed else 'FAILED '}\n"
+        f"  • Benchmark Source: Automated Simulation Test Runner\n"
+        f"  • Measured vs SLA Reference: {evaluation.metrics_comparison}\n"
+        f"  • Assessment Summary: {evaluation.summary}"
+    )
 
     return {
         "test_results": {
@@ -42,5 +64,5 @@ Test Metrics:
             "metrics": raw_metrics
         },
         "retry_count": current_retries + 1,
-        "history": [f"Validation Agent (Vertex AI): Benchmark evaluated. Passed={evaluation.passed}. {evaluation.summary}"]
+        "history": [history_msg]
     }

@@ -5,12 +5,13 @@ from langchain_google_vertexai import ChatVertexAI
 from agents.state import IncidentState
 
 class PatchSchema(BaseModel):
-    target_file: str = Field(description="File to patch, e.g. backend/app/proxy.py")
-    patch_explanation: str = Field(description="Brief overview of why this patch fixes the issue")
-    proposed_changes: str = Field(description="Concrete configuration/code parameter updates to apply")
+    target_file: str = Field(description="File to patch, e.g. backend/app/metrics.py")
+    suggestion_rationale: str = Field(description="Detailed engineering rationale behind the suggested configuration changes")
+    proposed_parameter_suggestions: str = Field(description="Exact parameter updates suggested for review/application")
+    scaling_parameters: str = Field(description="Explicit values suggested (e.g. pool_size=20, max_overflow=10)")
 
 async def development_node(state: IncidentState) -> Dict[str, Any]:
-    print("[Development Agent (Vertex AI)] Constructing targeted patch...")
+    print("[Development Agent (Vertex AI)] Formulating proposed configuration recommendations...")
     root_cause = state.get("root_cause", "")
     retries = state.get("retry_count", 0)
 
@@ -23,20 +24,30 @@ async def development_node(state: IncidentState) -> Dict[str, Any]:
     )
     structured_llm = llm.with_structured_output(PatchSchema)
 
-    prompt = f"""You are a Backend Software Engineer Agent. Generate a code fix for this incident.
+    prompt = f"""You are a Principal Backend Engineer Agent. Formulate precise configuration tuning recommendations to resolve the incident. 
 
-Root Cause:
+IMPORTANT: Frame your response as a **proposed configuration suggestion** for review, outlining exact parameter changes needed.
+
+Diagnosis & Root Cause:
 {root_cause}
 
-Attempt Number: {retries + 1}
-(If attempt > 1, increase pool sizes or timeouts significantly beyond standard values.)
+Current Attempt: {retries + 1}
+(Rule: Scale up values proportionally based on attempt number if previous attempts failed validation).
 
-Provide the target file path, explanation, and precise proposed parameter updates."""
+Provide explicit parameter suggestions, detailed rationale, and exact scaling values."""
 
     patch: PatchSchema = await structured_llm.ainvoke(prompt)
-    patch_summary = f"{patch.target_file} -> {patch.proposed_changes}"
+    patch_summary = f"{patch.target_file} -> {patch.proposed_parameter_suggestions} (Scaling: {patch.scaling_parameters})"
+
+    history_msg = (
+        f"Development Agent Proposed Configuration (Attempt {retries + 1}):\n"
+        f"  • Target File: {patch.target_file}\n"
+        f"  • Engineering Rationale: {patch.suggestion_rationale}\n"
+        f"  • Proposed Parameter Suggestions: {patch.proposed_parameter_suggestions}\n"
+        f"  • Explicit Scaling Values: {patch.scaling_parameters}"
+    )
 
     return {
         "proposed_patch": patch_summary,
-        "history": [f"Development Agent (Vertex AI): Attempt {retries + 1} generated patch for {patch.target_file}"]
+        "history": [history_msg]
     }

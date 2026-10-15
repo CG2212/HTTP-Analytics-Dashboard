@@ -4,3 +4,7 @@ httpx
 sqlalchemy
 asyncpg
 psycopg2-binary
+langgraph
+langchain-google-vertexai
+pydantic
+pytz

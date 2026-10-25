@@ -1,7 +1,7 @@
 from sqlalchemy.future import select
 from sqlalchemy import func
 from app.database import AsyncSessionLocal, HTTPSessionModel
-
+from app.middleware import upsert_incident
 from app.logging_config import setup_logging, get_logger
 
 logger = get_logger("app.metrics")
@@ -26,6 +26,7 @@ async def save_session_to_db(session_data: dict):
         except Exception as e:
             await session.rollback()
             logger.error(f"Failed to save session to DB: {e}", exc_info=True)
+            upsert_incident(e)
 
 async def get_dashboard_data_from_db(limit: int = 50):
     """Calculates all metrics and fetches recent sessions directly from PostgreSQL."""
@@ -96,6 +97,7 @@ async def get_dashboard_data_from_db(limit: int = 50):
 
         except Exception as e:
             logger.error("Failed to query dashboard metrics from DB", exc_info=True)
+            upsert_incident(e)
             return {
                 "metrics": {
                     "total_requests": 0,

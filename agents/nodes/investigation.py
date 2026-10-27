@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from langchain_google_vertexai import ChatVertexAI
 from agents.state import IncidentState
 from agents.tools.db_inspector import get_postgres_connection_stats
-from agents.tools.incident_queue_parser import get_next_unresolved_incident
+from agents.tools.incident_queue_parser import get_next_unresolved_incident, mark_incident_resolved
 
 class InvestigationSchema(BaseModel):
     fault_type: str = Field(description="Category of failure: HTTP_TIMEOUT, DB_POOL_EXHAUSTION, etc.")
@@ -26,6 +26,9 @@ async def investigation_node(state: IncidentState) -> Dict[str, Any]:
     else:
         incident_context = incident
         print(f"Analyzing Incident: {incident.get('error_fingerprint')} (Occurrences: {incident.get('occurrences')})")
+        
+        # OPTIONAL: Mark it resolved immediately so it moves to next incident.
+        mark_incident_resolved(incident.get('error_fingerprint'))
 
     db_stats = await get_postgres_connection_stats()
 

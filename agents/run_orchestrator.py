@@ -9,16 +9,23 @@ if str(ROOT_DIR) not in sys.path:
 import asyncio
 from agents.graph import compile_incident_graph
 from agents.tools.log_parser import extract_latest_failure  # <-- Import parser tool
+from agents.tools.incident_queue_parser import get_next_unresolved_incident
 
 async def main():
     print("[Orchestrator] Initializing LangGraph Self-Healing Incident Pipeline...")
+    
+    # 1. Check the queue first instead of blindly reading raw logs
+    next_incident = get_next_unresolved_incident()
+    
+    if not next_incident:
+        print("[Orchestrator] No unresolved incidents found in queue. System is healthy. Exiting pipeline.")
+        return
+
+    print(f"[Orchestrator] Found unresolved incident: {next_incident.get('error_fingerprint')}")
     incident_graph = compile_incident_graph()
 
-    # Automatically read the latest live failure from backend/app.log
-    live_crash_log = extract_latest_failure()
-
     initial_state = {
-        "raw_log": live_crash_log,
+        "raw_log": next_incident.get('error_message'),
         "root_cause": "",
         "proposed_patch": "",
         "test_results": {},

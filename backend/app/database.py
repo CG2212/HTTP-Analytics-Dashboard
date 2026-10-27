@@ -6,6 +6,7 @@ import datetime
 
 from app.config import DATABASE_URL
 from app.logging_config import setup_logging, get_logger
+from app.middleware import upsert_incident
 
 logger = get_logger("app.database")
 
@@ -49,4 +50,5 @@ async def init_db():
         logger.info("Database tables initialized successfully.")
     except Exception as e:
         logger.error("Failed to initialize database tables", exc_info=True)
+        upsert_incident(e)
         raise e

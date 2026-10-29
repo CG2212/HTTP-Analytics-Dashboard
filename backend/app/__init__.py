@@ -9,6 +9,7 @@ from app.proxy import router as proxy_router
 from app.database import init_db
 from app.logging_config import setup_logging, get_logger
 from app.middleware import AutonomousIncidentMiddleware, upsert_incident
+from app.incidents import router as incidents_router
 
 logger = get_logger("app.main")
 
@@ -18,6 +19,7 @@ def create_app():
     
     # Register middleware for all regular HTTP requests
     app.add_middleware(AutonomousIncidentMiddleware)
+    app.include_router(incidents_router)
     logger.info("FastAPI application initialized.")
 
     @app.on_event("startup")
@@ -35,6 +37,11 @@ def create_app():
     async def serve_index():
         logger.debug("Serving dashboard index page")
         return FileResponse(os.path.join(frontend_dir, "index.html"))
+    
+    @app.get("/incident")
+    async def serve_incident():
+        logger.debug("Serving incident management page")
+        return FileResponse(os.path.join(frontend_dir, "incident.html"))
 
     # Fetch complete metrics & sessions from PostgreSQL on page load
     @app.get("/api/dashboard-data")

@@ -33,7 +33,7 @@ async def main():
         "history": []
     }
 
-    print("\n[Orchestrator] Triggering graph execution for detected incident...\n")
+    print("[Orchestrator] Triggering graph execution for detected incident...\n")
     final_state = await incident_graph.ainvoke(initial_state)
 
     print("\n" + "="*50)

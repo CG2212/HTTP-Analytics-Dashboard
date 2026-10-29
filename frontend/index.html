@@ -4,14 +4,28 @@
     <meta charset="UTF-8">
     <title>HTTP Analytics & Header Inspector Dashboard</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <!-- Include Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-    <h1>HTTP Analytics Dashboard</h1>
-    <p>Proxy endpoint active: <code>http://localhost:8000/proxy/get</code> | <code>http://localhost:8000/proxy/post</code></p>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 20px;">
+        <h1 style="margin: 0;">HTTP Analytics Dashboard</h1>
+        <a href="/incident" style="background: #dc2626; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: bold;">Incidents View</a>
+    </div>
+
+    <!-- Requests Over Time Graph Card -->
+<div style="padding: 0 20px; margin-bottom: 20px;">
+    <div class="breakdown-card" style="margin-top: 20px; background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+    <h3 style="margin-top: 0; color: #1e293b;">📈 Requests Over Time</h3>
+    <div style="position: relative; height: 220px; width: 100%;">
+        <canvas id="requestsLineChart" style="width: 100%; height: 100%;"></canvas>
+    </div>
+</div>
+</div>
 
     <!-- Top Metric Counters -->
-    <div class="metrics-grid">
+    <div class="metrics-grid" style="padding: 0 20px;">
         <div class="card">
             <h4>Total Requests</h4>
             <div class="value" id="total-requests">0</div>
@@ -27,7 +41,7 @@
     </div>
 
     <!-- Categorized Breakdown Cards -->
-    <div class="breakdowns-grid">
+    <div class="breakdowns-grid" style="padding: 0 20px; margin-top: 20px;">
         <div class="breakdown-card">
             <h3>HTTP Methods</h3>
             <div class="stat-list" id="methods-list"></div>
@@ -43,7 +57,7 @@
     </div>
 
     <!-- Session List and Header Inspector -->
-    <div class="container">
+    <div class="container" style="padding: 0 20px; margin-top: 20px; margin-bottom: 40px;">
         <div class="list-container">
             <h3>Captured Sessions</h3>
             <div id="session-list"></div>
